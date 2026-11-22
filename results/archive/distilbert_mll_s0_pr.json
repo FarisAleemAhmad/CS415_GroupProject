@@ -1,0 +1,49 @@
+{
+  "args": {
+    "model": "distilbert",
+    "loss": "mll",
+    "seed": 0,
+    "epochs": 2,
+    "batch_size": 32,
+    "lr": 3e-05,
+    "max_len": 256,
+    "vocab_size": 50000,
+    "alpha": 1.0,
+    "lam": 0.5,
+    "glove": null,
+    "limit": 100000,
+    "eval_limit": null,
+    "data": "data/processed",
+    "out": "results/logs",
+    "tag": "_pr"
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "epoch_time_s": 1051.7671735286713,
+      "train_loss": 0.6724857668972015,
+      "val_accuracy": 0.7608945393275638,
+      "val_macro_f1": 0.5662339912428782,
+      "val_mae": 0.31421204462485003,
+      "val_large_error_rate": 0.05144111715299584
+    },
+    {
+      "epoch": 2,
+      "epoch_time_s": 1196.3295781612396,
+      "train_loss": 0.5419348287248611,
+      "val_accuracy": 0.7557376630670649,
+      "val_macro_f1": 0.5735972875271157,
+      "val_mae": 0.32133466084603407,
+      "val_large_error_rate": 0.05338132802328253
+    }
+  ],
+  "test": {
+    "accuracy": 0.7593258996452104,
+    "macro_f1": 0.5735369099564385,
+    "mae": 0.3176887987835783,
+    "large_error_rate": 0.05266092245311708
+  },
+  "train_time_s": 2248.119751214981,
+  "peak_gpu_mem_gb": 2.936952832,
+  "n_train": 100000
+}

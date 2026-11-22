@@ -1,0 +1,85 @@
+{
+  "args": {
+    "model": "textcnn",
+    "loss": "ce",
+    "seed": 0,
+    "epochs": 6,
+    "batch_size": 64,
+    "lr": 0.001,
+    "max_len": 256,
+    "vocab_size": 50000,
+    "alpha": 1.0,
+    "lam": 0.5,
+    "glove": "data/raw/glove/glove.840B.300d.txt",
+    "limit": null,
+    "eval_limit": null,
+    "data": "data/processed",
+    "out": "results/logs",
+    "tag": "_pr"
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "epoch_time_s": 47.699907302856445,
+      "train_loss": 0.8030802132821399,
+      "val_accuracy": 0.7280385999846826,
+      "val_macro_f1": 0.4433157393607351,
+      "val_mae": 0.4552347399862143,
+      "val_large_error_rate": 0.10528196880345153
+    },
+    {
+      "epoch": 2,
+      "epoch_time_s": 55.81866979598999,
+      "train_loss": 0.7420316580656465,
+      "val_accuracy": 0.7299277526741722,
+      "val_macro_f1": 0.4620612782237618,
+      "val_mae": 0.44606979653314954,
+      "val_large_error_rate": 0.1012483725204871
+    },
+    {
+      "epoch": 3,
+      "epoch_time_s": 57.244144439697266,
+      "train_loss": 0.7220665067343358,
+      "val_accuracy": 0.7384034106864772,
+      "val_macro_f1": 0.4744590325834637,
+      "val_mae": 0.41530724260294605,
+      "val_large_error_rate": 0.09210895815782083
+    },
+    {
+      "epoch": 4,
+      "epoch_time_s": 60.71432566642761,
+      "train_loss": 0.7097537610562383,
+      "val_accuracy": 0.7383778815960788,
+      "val_macro_f1": 0.48350428972896076,
+      "val_mae": 0.41083965178320697,
+      "val_large_error_rate": 0.0872329018917056
+    },
+    {
+      "epoch": 5,
+      "epoch_time_s": 62.823612689971924,
+      "train_loss": 0.699476307297044,
+      "val_accuracy": 0.7399096270199893,
+      "val_macro_f1": 0.47688240377883745,
+      "val_mae": 0.40759745730259633,
+      "val_large_error_rate": 0.08787112915166832
+    },
+    {
+      "epoch": 6,
+      "epoch_time_s": 62.60464096069336,
+      "train_loss": 0.6901751159469569,
+      "val_accuracy": 0.7409818488167267,
+      "val_macro_f1": 0.4884674325269156,
+      "val_mae": 0.40484031553955735,
+      "val_large_error_rate": 0.08702866916851752
+    }
+  ],
+  "test": {
+    "accuracy": 0.7472377090724784,
+    "macro_f1": 0.4952194710798622,
+    "mae": 0.3948048656867714,
+    "large_error_rate": 0.08474404460212874
+  },
+  "train_time_s": 346.91181087493896,
+  "peak_gpu_mem_gb": 0.231405056,
+  "n_train": 314504
+}

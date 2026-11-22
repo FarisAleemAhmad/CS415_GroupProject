@@ -1,0 +1,66 @@
+\section{Theoretical Design Decisions}
+\label{sec:design}
+
+\subsection{Dataset and Preprocessing}
+We use the Amazon Fine Food Reviews dataset~\cite{amazonfinefoods}, which contains 568{,}454 reviews with star ratings from 1 to 5. Only the review text and the star rating are used as model input and target. Preprocessing consists of three steps: (i)~rows with missing or empty text or an invalid score are removed (none were found in this dataset); (ii)~HTML tags are stripped and whitespace is normalized; (iii)~reviews with identical text are removed, keeping the first occurrence. The last step removes 175{,}319 reviews (30.8\%), leaving 393{,}135. We do this to avoid two problems: duplicated reviews inflate test scores when copies end up in different splits, and models can memorize repeated text instead of learning rating cues. Ratings are mapped to labels $0,\dots,4$ for training and mapped back to $1,\dots,5$ for evaluation.
+
+\subsection{Data Splitting}
+The cleaned data is split into training, validation and test sets by product ID, so that all reviews of a product appear in only one split. A random split at the review level would put reviews of the same product (which share vocabulary, product names and similar opinions) in both training and test data, and that would overestimate how well the models generalize. Products are shuffled with a fixed seed (42) and assigned in order until the training set holds about 80\% of the reviews, the validation set the next 10\%, and the test set the final 10\%. The code verifies that no product occurs in two splits. Table~\ref{tab:splits} gives the resulting sizes. The splits are fixed and shared by all six experimental settings and all random seeds.
+
+\subsection{TextCNN}
+\label{sec:textcnn}
+The first architecture follows Kim~\cite{kim2014}. Reviews are lowercased and split into word and punctuation tokens with a simple regular expression. The vocabulary contains the 50{,}000 most frequent training-set tokens that occur at least twice, plus padding and unknown tokens. Reviews are truncated or padded to 256 tokens, which holds the full review for 96.0\% of them (measured on a random sample of 30{,}000 training reviews; 95th percentile: 237 tokens).
+
+Each token is mapped to a 300-dimensional GloVe vector~\cite{pennington2014} (840B-token release). 42{,}312 of the 50{,}002 vocabulary entries (84.6\%) have a GloVe vector; the others receive a small random vector. The embeddings are \emph{kept fixed} during training, as stated in the project proposal. This keeps the number of trainable parameters small, avoids overfitting the embeddings to frequent review-specific words, and keeps the comparison between losses on the convolutional and classification layers.
+
+The embedded sequence passes through three parallel one-dimensional convolutions with filter widths 3, 4 and 5 (100 filters each, ReLU activation), so that each filter detects a pattern over 3--5 consecutive tokens. Max-over-time pooling keeps the strongest response of each filter. The 300 pooled features are concatenated, passed through dropout ($p=0.5$) and a linear layer with five outputs. Filter widths, filter count and dropout rate are the defaults of Kim~\cite{kim2014}; Zhang and Wallace~\cite{zhangwallace2017} analyze how sensitive such one-layer CNNs are to these settings. We do not tune them, because the goal is to compare losses, not to maximize TextCNN accuracy. The model is trained with AdamW (learning rate $10^{-3}$, batch size 64) for six epochs.
+
+\subsection{DistilBERT}
+\label{sec:distilbert}
+The second architecture is DistilBERT~\cite{sanh2019} (\texttt{distilbert-base-uncased}), a pretrained Transformer encoder obtained from BERT~\cite{devlin2019} by knowledge distillation. We chose it over BERT-base because it has about 40\% fewer parameters and runs considerably faster, which matters on a single 8\,GB laptop GPU. Its pretrained representations are context-dependent, in contrast to the static GloVe vectors of TextCNN, so the two architectures differ strongly in how they represent text.
+
+The final hidden state of the first token (\texttt{[CLS]}) is passed through dropout ($p=0.1$) and a linear layer with five outputs. All pretrained weights and the new layer are fine-tuned together, so the representation can adapt to rating prediction. Inputs are truncated to 256 word pieces, which holds the full review for 94.2\% of reviews (same sample; 95th percentile: 273 word pieces), and each mini-batch is padded only to the length of its longest review (dynamic padding), which reduced training time by about one third in our pilot. We use AdamW (learning rate $3\times10^{-5}$, batch size 32) with mixed-precision (fp16) arithmetic and no warm-up or learning-rate schedule.
+
+Our pilot suggested about 27 minutes per epoch on all 314{,}504 training reviews, but the real epochs on the 100{,}000-review subset took 20--30 minutes each (Section~\ref{sec:experiments}), so a full epoch would take an hour or more. Three losses, three seeds and two epochs on the full training set would then take more than 20 hours. For the progress report we therefore fine-tune on a random subsample of 100{,}000 training reviews for two epochs. The validation and test sets are used in full. This is a compute trade-off we chose on purpose, applied the same way to all three losses, and not a methodological decision; the TextCNN models, which are cheap, use the full training set.
+
+\subsection{Loss Functions}
+\label{sec:losses}
+Let $z\in\mathbb{R}^5$ be the model output for a review with true label $y\in\{0,\dots,4\}$, and let $\hat{p}=\mathrm{softmax}(z)$. All three losses use the same softmax output, so the models differ only in the training objective.
+
+\subsubsection{Cross entropy (CE)}
+\begin{equation}
+\mathcal{L}_{\mathrm{CE}} = -\log \hat{p}_y .
+\end{equation}
+CE rewards probability on the correct class but treats all wrong classes alike: predicting 5 stars for a 1-star review costs the same as predicting 2 stars.
+
+\subsubsection{Ordinal Log Loss (OLL)}
+\begin{equation}
+\mathcal{L}_{\mathrm{OLL}} = -\sum_{k\ne y} |k-y|^{\alpha}\,\log\!\left(1-\hat{p}_k\right),
+\end{equation}
+as defined by Castagnos et al.~\cite{castagnos2022} and restated by Kasa et al.~\cite{kasa2024}. Every class $k$ other than the true class contributes a penalty that grows when $\hat{p}_k$ is large and is multiplied by its distance $|k-y|^\alpha$ from the true class. Probability mass placed far from the true rating is therefore punished more than mass placed on a neighboring rating. The term vanishes when the prediction matches the one-hot target. We use $\alpha=1$, so that the penalty is proportional to the rating distance, matching the absolute-error view of our MAE metric.
+
+\subsubsection{Multitask Log Loss (MLL)}
+\begin{equation}
+\mathcal{L}_{\mathrm{MLL}} = \lambda\,\mathcal{L}_{\mathrm{CE}} + (1-\lambda)\,\mathcal{L}_{\mathrm{OLL}},\qquad \lambda\in[0,1],
+\end{equation}
+the weighted combination proposed by Kasa et al.~\cite{kasa2024}. CE keeps the gradient focused on the correct class, which should preserve exact-match performance, while OLL adds the distance-aware penalty. The paper leaves $\lambda$ as a hyperparameter. For the progress report we fix $\lambda=0.5$; tuning $\lambda$ on the validation set is part of the remaining work.
+
+All three losses were implemented from these formulas and checked on hand-made logits: CE gives the same loss for a prediction one star off and four stars off, whereas OLL and MLL give a much larger loss for the second.
+
+\subsection{Evaluation Metrics}
+\label{sec:metrics}
+Let $y_i$ and $\hat{y}_i$ be the true and predicted ratings of review $i$ in the test set of size $N$, and let the predicted rating be the class with the highest probability. We report
+\begin{align}
+\text{Accuracy} &= \tfrac{1}{N}\textstyle\sum_i \mathbb{1}[\hat{y}_i=y_i],\\
+\text{MAE} &= \tfrac{1}{N}\textstyle\sum_i |\hat{y}_i-y_i|,\\
+\text{Large error rate} &= \tfrac{1}{N}\textstyle\sum_i \mathbb{1}[\,|\hat{y}_i-y_i|\ge 2\,],
+\end{align}
+and Macro F1, the unweighted mean of the five per-class F1 scores. Accuracy measures exact classification. Macro F1 gives equal weight to rare and frequent ratings, which is needed because about 64\% of the reviews are 5-star. MAE and the large error rate measure how far the errors are, in line with the recommendation of the ordinal-evaluation literature~\cite{gaudette2009,chen2021}. We also record the training time on the same hardware.
+
+\subsection{Experimental Protocol}
+\label{sec:protocol}
+There are six experimental settings: two architectures (TextCNN, DistilBERT) times three losses (CE, OLL, MLL). Within an architecture, the data splits, model structure, optimizer and training budget are identical across losses; only the loss changes. After each epoch the model is evaluated on the validation set, and the checkpoint with the best validation Macro F1 is kept. The test set is evaluated exactly once per run, with that checkpoint. The proposal plans three random seeds per setting with the same data splits; the progress report contains one seed per setting. Model settings were first checked in short pilot runs for training time and memory.
+
+\subsection{Success Criteria}
+\label{sec:criteria}
+Following the proposal, an ordinal loss counts as successful in an architecture if, relative to cross entropy and using the average test result over the seeds, it (i)~reduces MAE by at least 3\%, (ii)~reduces the large error rate by at least 5\%, and (iii)~lowers Macro F1 by no more than 0.01. We report the findings whether or not the targets are reached.

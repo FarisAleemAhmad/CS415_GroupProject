@@ -1,0 +1,24 @@
+\section{Conclusion and Next Steps}
+\label{sec:conclusion}
+
+\subsection{Summary of Work Done}
+We built a complete experimental pipeline for predicting 1--5 star ratings from review text. On the Amazon Fine Food Reviews data we removed duplicate reviews (leaving 393{,}135 of 568{,}454) and split the data by product into training, validation and test sets of 314{,}504, 39{,}171 and 39{,}460 reviews, with no product shared between splits. We implemented two architectures, a TextCNN with fixed GloVe embeddings and a fine-tuned DistilBERT, and three loss functions: cross entropy, Ordinal Log Loss (OLL) and Multitask Log Loss (MLL). We implemented the four evaluation metrics (accuracy, Macro F1, MAE and the large error rate) and a training procedure that selects the checkpoint on the validation set and evaluates the test set once. The MLL definition was checked against the original paper. Each of the six settings (two architectures times three losses) has been run once, and the predictions and checkpoints of every run are stored, so we can do a detailed error analysis.
+
+\subsection{Results Obtained So Far}
+With TextCNN, both ordinal losses reduce the distance-based errors compared with cross entropy: OLL lowers the MAE by 5.4\% and the large error rate by 17.4\%, MLL by 4.4\% and 10.3\%, and Macro F1 does not drop (it rises by about 0.013). This meets the three success conditions of the proposal for TextCNN, relative to unweighted cross entropy. A class-weighted linear baseline obtains gains of similar size without any ordinal loss (Section~\ref{sec:baselines}), so part of the benefit may come from reducing the bias towards 5 stars. The confusion matrices show why: cross entropy sends most 4-star reviews and many 1- and 3-star reviews to the majority class of 5 stars, whereas OLL spreads its errors to neighboring ratings and makes fewer errors of three or four stars, at the cost of a lower recall for the extreme classes and a lower accuracy (OLL) or an almost unchanged one (MLL).
+With DistilBERT (100k training reviews, two epochs) all metrics are better than with TextCNN, but the ordinal losses do not help: OLL raises the MAE from 0.311 to 0.320 and lowers Macro F1 from 0.575 to 0.556, with a small drop in the large error rate (5.1\% to 4.8\%), and MLL is about equal to cross entropy. The hypothesis that ordinal losses reduce distance-based errors is thus supported for TextCNN but not, in this first run, for DistilBERT, so the benefit seems to depend on the architecture and on how strong the baseline already is.
+All results come from a single random seed, so they are preliminary.
+
+\subsection{Limitations of the Current Results}
+(i)~Every setting has been run once, so we cannot yet quantify random variation, and small differences (for example in the large error rate of DistilBERT) may not be meaningful. (ii)~DistilBERT was trained on a 100{,}000-review subsample for two epochs, because of the time cost on our hardware, whereas TextCNN used the full training set; the architectures are therefore compared under different data budgets. (iii)~The loss parameters $\alpha=1$ and $\lambda=0.5$ and the learning rates were fixed and not tuned on the validation set. (iv)~TextCNN reached its best validation score in the last of its six epochs, so it may be undertrained.
+
+\subsection{Remaining Work}
+\begin{itemize}
+\item Run each of the six settings with three random seeds and report means and standard deviations, then repeat the success-criteria check on the averages.
+\item Tune the main hyperparameters on the validation set with a comparable budget for each loss: $\lambda$ for MLL, $\alpha$ for OLL, and the number of epochs.
+\item Train DistilBERT on more (or all) training reviews if time allows, to remove the data-budget difference to TextCNN.
+\item Run cross entropy with class weights on both architectures as an additional control, to separate the effect of the ordinal losses from that of correcting the class imbalance.
+\item Extend the error analysis with examples of misclassified reviews, especially reviews with mixed opinions, and compare the training times of the losses.
+\item Optionally, evaluate the trained models on reviews from another product category to examine generalization~\cite{blitzer2007}.
+\item Prepare the final report.
+\end{itemize}

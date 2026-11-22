@@ -1,0 +1,13 @@
+\begin{tabular}{llcccccc}
+\toprule
+Model & Loss & Seeds & Accuracy & Macro F1 & MAE & Large Err. & Train (min) \\
+\midrule
+\multirow{3}{*}{TextCNN} & CE & 1 & 0.747 & 0.495 & 0.395 & 0.085 & 5.4 \\
+ & OLL & 1 & 0.733 & 0.508 & 0.373 & 0.070 & 7.0 \\
+ & MLL & 1 & 0.744 & 0.509 & 0.378 & 0.076 & 8.2 \\
+\midrule
+\multirow{3}{*}{DistilBERT} & CE & 1 & 0.767 & 0.575 & 0.311 & 0.051 & 51.7 \\
+ & OLL & 1 & 0.746 & 0.556 & 0.320 & 0.048 & 43.3 \\
+ & MLL & 1 & 0.760 & 0.574 & 0.317 & 0.052 & 39.3 \\
+\bottomrule
+\end{tabular}

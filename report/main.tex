@@ -1,0 +1,59 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+
+% Highlight unfinished parts so they are easy to find
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\graphicspath{{figures/}{../results/figures/}}
+
+\begin{document}
+
+\title{Product Review Rating Prediction:\\
+Comparing Ordinal Loss Functions for TextCNN and DistilBERT\\
+\large CS415 Progress Report}
+
+\author{\IEEEauthorblockN{Efe Han Kele\c{s}}
+\IEEEauthorblockA{\textit{Computer Science and Engineering} \\
+\textit{Sabanc{\i} University} \\
+efe.keles@sabanciuniv.edu}
+\and
+\IEEEauthorblockN{Ege A\c{s}an}
+\IEEEauthorblockA{\textit{Computer Science and Engineering} \\
+\textit{Sabanc{\i} University} \\
+ege.asan@sabanciuniv.edu}
+\and
+\IEEEauthorblockN{Faris Aleem Ahmad}
+\IEEEauthorblockA{\textit{Computer Science and Engineering} \\
+\textit{Sabanc{\i} University} \\
+faris.ahmad1@sabanciuniv.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+Predicting a 1--5 star rating from review text is an ordinal problem, but the usual cross-entropy loss treats a one-star and a four-star error alike. We compare cross entropy with two ordinal losses, Ordinal Log Loss (OLL) and Multitask Log Loss (MLL), on two architectures, a TextCNN with fixed GloVe vectors and a fine-tuned DistilBERT, using the Amazon Fine Food Reviews data split by product. This progress report covers the data pipeline, the implementation, and one run of each of the six settings. With TextCNN, OLL lowers the MAE by 5.4\% and the share of errors of two or more stars by 17.4\%, without losing Macro F1. A class-weighted linear baseline gives gains of similar size, so part of this benefit may come from correcting the bias towards 5 stars. With DistilBERT, which is stronger overall, the ordinal losses give no clear gain (OLL: MAE +2.8\%, large errors $-6.7\%$, Macro F1 $-0.018$). These results come from a single seed; three seeds, tuning of the loss parameters and a larger DistilBERT training budget remain to be done.
+\end{abstract}
+
+\begin{IEEEkeywords}
+rating prediction, ordinal classification, TextCNN, DistilBERT, ordinal log loss
+\end{IEEEkeywords}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/design}
+\input{sections/experiments}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,19 @@
+\section{Problem Definition and Motivation}
+\label{sec:intro}
+
+Online shops collect huge numbers of product reviews. The text tells us about a customer's experience, and the star rating sums up how satisfied they were. In this project we predict the star rating of a review, from 1 to 5, from its text alone. A model like this could estimate a rating for a written review that has none, and it could also help to check whether a rating and its text actually agree.
+
+\subsection{Why the Task Is Difficult}
+A single review often contains both positive and negative opinions, for example praise for the taste of a product together with a complaint about its price. Similar comments can also receive different ratings, because customers have different expectations. In addition, the data is strongly imbalanced: in the dataset we use, about 64\% of the reviews give five stars and only about 5\% give two stars (Section~\ref{sec:experiments}). So a model can get a high accuracy just by favoring the majority class, which means accuracy alone says little about how good it is.
+
+\subsection{Why the Order of the Ratings Matters}
+Star ratings are ordered. Predicting 2 stars for a 1-star review is a smaller mistake than predicting 5 stars. Standard training with cross entropy ignores this order: every wrong class is penalized the same way. Ordinal losses such as Ordinal Log Loss (OLL)~\cite{castagnos2022} and Multitask Log Loss (MLL)~\cite{kasa2024} add a penalty that grows with the distance between the predicted and the true rating. The evaluation should reflect this too. Accuracy and F1 cannot tell a near miss from a large error~\cite{chen2021}, so we also measure the mean absolute error and the share of predictions that are off by two or more stars.
+
+\subsection{Research Question and Hypothesis}
+Our research question is: \emph{can we improve rating predictions by teaching models to consider how far a wrong prediction is from the correct rating?} We compare three training objectives, cross entropy, OLL and MLL, on two architectures that process text in very different ways: a convolutional network over fixed pretrained word vectors (TextCNN~\cite{kim2014}) and a fine-tuned pretrained Transformer (DistilBERT~\cite{sanh2019}). Our hypothesis is that OLL and MLL reduce the mean absolute error and the number of large errors compared with cross entropy, at a small cost in exact-match performance, and we test this separately for each architecture.
+
+\subsection{Contributions}
+We do not propose a new loss. What we do is a controlled comparison of existing methods: within each architecture the data splits, the model structure and the evaluation protocol are identical, and only the loss function changes. We split the data by product so that training and test reviews do not leak into each other. We look at both how often the models get the exact rating and how far off their mistakes are, and we also compare training time.
+
+\subsection{Organization of This Report}
+Section~\ref{sec:related} reviews related work, and Section~\ref{sec:design} explains our design decisions and why we made them. Section~\ref{sec:experiments} shows the experiments we have done so far and their results, and Section~\ref{sec:conclusion} wraps up the progress and the next steps.

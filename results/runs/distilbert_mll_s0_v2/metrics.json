@@ -1,0 +1,59 @@
+{
+  "name": "distilbert_mll_s0_v2",
+  "args": {
+    "model": "distilbert",
+    "loss": "mll",
+    "seed": 0,
+    "epochs": 2,
+    "batch_size": 32,
+    "lr": 3e-05,
+    "max_len": 256,
+    "vocab_size": 50000,
+    "alpha": 1.0,
+    "lam": 0.5,
+    "glove": null,
+    "limit": 100000,
+    "eval_limit": null,
+    "data": "data/processed",
+    "out": "results/runs",
+    "force": false,
+    "tag": "_v2"
+  },
+  "started": "2026-11-21 07:56:32",
+  "torch": "2.5.1+cu121",
+  "gpu": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+  "n_train": 100000,
+  "n_val": 39171,
+  "n_test": 39460,
+  "best_epoch": 2,
+  "status": "complete",
+  "history": [
+    {
+      "epoch": 1,
+      "epoch_time_s": 1237.0969042778015,
+      "train_loss": 0.6725017510938645,
+      "val_accuracy": 0.7609455975083608,
+      "val_macro_f1": 0.5663473783878438,
+      "val_mae": 0.31428863189604556,
+      "val_large_error_rate": 0.051492175333792856
+    },
+    {
+      "epoch": 2,
+      "epoch_time_s": 1119.510707616806,
+      "train_loss": 0.5419726000881195,
+      "val_accuracy": 0.7564780066886216,
+      "val_macro_f1": 0.5746666754927329,
+      "val_mae": 0.32077302085726683,
+      "val_large_error_rate": 0.05320262439049297
+    }
+  ],
+  "test": {
+    "accuracy": 0.7597313735428282,
+    "macro_f1": 0.5740115674677033,
+    "mae": 0.31728332488596045,
+    "large_error_rate": 0.052179422199695895
+  },
+  "train_time_s": 2357.389532804489,
+  "finished": "2026-11-21 08:41:59",
+  "peak_gpu_mem_gb": 2.662095872
+}

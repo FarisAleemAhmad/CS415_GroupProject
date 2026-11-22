@@ -1,0 +1,57 @@
+{
+  "args": {
+    "model": "textcnn",
+    "loss": "ce",
+    "seed": 0,
+    "epochs": 3,
+    "batch_size": 64,
+    "lr": 0.001,
+    "max_len": 256,
+    "vocab_size": 50000,
+    "alpha": 1.0,
+    "lam": 0.5,
+    "glove": "data/raw/glove/glove.840B.300d.txt",
+    "limit": null,
+    "data": "data/processed",
+    "out": "results/logs",
+    "tag": "_pilot"
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "epoch_time_s": 45.41253423690796,
+      "train_loss": 0.8030802132821399,
+      "val_accuracy": 0.7280385999846826,
+      "val_macro_f1": 0.4433157393607351,
+      "val_mae": 0.4552347399862143,
+      "val_large_error_rate": 0.10528196880345153
+    },
+    {
+      "epoch": 2,
+      "epoch_time_s": 52.08848166465759,
+      "train_loss": 0.7420316580656465,
+      "val_accuracy": 0.7299277526741722,
+      "val_macro_f1": 0.4620612782237618,
+      "val_mae": 0.44606979653314954,
+      "val_large_error_rate": 0.1012483725204871
+    },
+    {
+      "epoch": 3,
+      "epoch_time_s": 64.54966616630554,
+      "train_loss": 0.7220665067343358,
+      "val_accuracy": 0.7384034106864772,
+      "val_macro_f1": 0.4744590325834637,
+      "val_mae": 0.41530724260294605,
+      "val_large_error_rate": 0.09210895815782083
+    }
+  ],
+  "test": {
+    "accuracy": 0.744703497212367,
+    "macro_f1": 0.479598118465031,
+    "mae": 0.40207805372529143,
+    "large_error_rate": 0.08702483527622909
+  },
+  "train_time_s": 162.05367517471313,
+  "peak_gpu_mem_gb": 0.231405056,
+  "n_train": 314504
+}

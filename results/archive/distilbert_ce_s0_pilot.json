@@ -1,0 +1,39 @@
+{
+  "args": {
+    "model": "distilbert",
+    "loss": "ce",
+    "seed": 0,
+    "epochs": 1,
+    "batch_size": 32,
+    "lr": 3e-05,
+    "max_len": 256,
+    "vocab_size": 50000,
+    "alpha": 1.0,
+    "lam": 0.5,
+    "glove": null,
+    "limit": 20000,
+    "data": "data/processed",
+    "out": "results/logs",
+    "tag": "_pilot"
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "epoch_time_s": 155.31642937660217,
+      "train_loss": 0.7628534404754639,
+      "val_accuracy": 0.74,
+      "val_macro_f1": 0.45383041967878757,
+      "val_mae": 0.376,
+      "val_large_error_rate": 0.0724
+    }
+  ],
+  "test": {
+    "accuracy": 0.754,
+    "macro_f1": 0.4618724677147066,
+    "mae": 0.364,
+    "large_error_rate": 0.0732
+  },
+  "train_time_s": 155.3254566192627,
+  "peak_gpu_mem_gb": 2.6609152,
+  "n_train": 20000
+}

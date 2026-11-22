@@ -1,0 +1,39 @@
+1) our task
+	- given text of product review, predict stars.
+2) Dataset
+	- Amazon Fine Food Reviews -> 568000 reviews
+3) Our approach, does training with losses help the ordered star system
+	- 3 types of losses
+		a) CE -> normal loss and our baseline
+		b) OLL -> Ordinal Log Loss -> further away rating, bigger loss
+		c) MLL -> blend of CE and OLL
+4) Model we use 
+	a) textCNN -> smaller older network, uses GloVE, slides window of word to spot patterns
+	b) DistillBERT -> large english language model -> we finetune it.
+	
+so ---- 2 models, 3 losses -> 6 settings, 3 random seeds per settings.
+
+5) Success Evaluation
+	a) Accuracy
+	b) Macro F1 -> score that treats each star class equally
+	c) MAE -> average number of stars we are off by 
+	d) Large Error Rate -> the share of guesses off by 2 stars or more
+	
+6) SUCCESS RULE FROM PROPOSAL 
+	- a loss counts as a win if it, compared with CE, 
+		1) cuts MAE by atleast 3%
+		2) cuts the large error rate by atleast 5%
+		3) loses no more than 0.01 of the macroF1
+		
+		
+7) PROGRESS SO FAR
+		1) cleaned data (175000 copies)
+		2) Split by product, not review (80/10/10)
+		3) ran all 6 settings once (1 epoch) with seed 0.
+		4) RESULTS -> TextCNN had all 3 sucess reached, DistillBERT not (but one run only, and its a bigger model, had only 100k reviews rn)
+8) WHAT COMES NEX
+		1) three seeds per settings
+		2) tune settings with validation (lamba, OLL strength,learning rate, epochs)
+		3) complete DistillBERT (more data and epochs)
+		
+		

@@ -1,0 +1,24 @@
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+results/logs/*
+!results/logs/.gitkeep
+*.pt
+*.pth
+# LaTeX build files
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.synctex.gz
+# per-run artifacts: keep metrics/predictions, ignore big checkpoints
+results/runs/*/model.pt
+overleaf_pkg/
+overleaf_upload.zip
+overleaf_upload.pdf

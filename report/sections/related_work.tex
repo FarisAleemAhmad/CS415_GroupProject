@@ -1,0 +1,46 @@
+\section{Related Work}
+\label{sec:related}
+
+Our task sits at the intersection of three lines of work: neural text classification, rating prediction from review text, and learning with ordered labels. We go through each of them and then say how our study fits in.
+
+\subsection{Neural Text Classification: CNNs and Pretrained Transformers}
+Convolutional networks became a standard tool for sentence and document classification after Kalchbrenner et al.~\cite{kalchbrenner2014} introduced a dynamic CNN with $k$-max pooling and Kim~\cite{kim2014} showed that a single convolutional layer over pretrained word vectors, followed by max-over-time pooling, is a strong baseline. Kim found that pretrained vectors improved results over random initialization. Zhang and Wallace~\cite{zhangwallace2017} later ran a systematic sensitivity analysis of one-layer CNNs and showed which design choices (e.g., filter region sizes, regularization, the form of the word vectors) matter for performance. Pretrained word vectors such as GloVe~\cite{pennington2014} are the usual input to such models, and the TextCNN in this project follows this recipe with fixed GloVe vectors.
+
+Transformer encoders~\cite{vaswani2017} changed the state of the art. BERT~\cite{devlin2019} is pretrained with masked language modeling and is fine-tuned end to end for classification by adding a task-specific output layer. DistilBERT~\cite{sanh2019} compresses BERT with knowledge distillation~\cite{hinton2015}, in which a smaller student model is trained to reproduce the behavior of a larger teacher. The result is a smaller and faster pretrained encoder that is still strong when fine-tuned, which suits our limited compute. We use DistilBERT as the Transformer representative and TextCNN as the convolutional one, so that we can see whether conclusions about the loss function hold across very different architectures.
+
+\subsection{Rating Prediction and Sentiment Analysis on Reviews}
+Early work already framed review rating as more than polarity. Pang and Lee~\cite{pang2005} treated it as inferring a position on a multi-point scale and exploited the fact that similar ratings should have similar text, using a metric-labeling formulation on top of an $n$-ary classifier. The Stanford Sentiment Treebank of Socher et al.~\cite{socher2013} provided fine-grained (five-class) sentiment labels and became a standard benchmark for ordered sentiment classes.
+
+Several neural models improve review rating prediction by adding structure or side information. Hierarchical attention networks~\cite{yang2016} model documents at the word and sentence level and were evaluated on review datasets such as Yelp and Amazon. Tang et al.~\cite{tang2015} inject user and product representations into a neural document classifier, and McAuley and Leskovec~\cite{mcauley2013} relate latent rating dimensions to topics found in review text. On review data that includes the Amazon Fine Food Reviews used here, Dang et al.~\cite{dang2021} build hybrid CNN and LSTM sentiment models and use the extracted sentiment as implicit feedback for collaborative filtering in a recommender system. These works mostly optimize the standard classification or regression objective and report accuracy-type or squared-error metrics. We use only the review text and keep the loss function as the experimental variable.
+
+\subsection{Ordinal Classification and Ordinal Losses}
+Ordinal classification is a long-studied problem. Frank and Hall~\cite{frank2001} decompose a $k$-class ordinal problem into $k-1$ binary problems of the form ``is the rating greater than $j$?'', which lets ordinary classifiers use the ordering. The same decomposition appears in neural form in the multiple-output CNN of Niu et al.~\cite{niu2016} and in the rank-consistent CORAL framework of Cao et al.~\cite{cao2020}, which enforces monotone binary outputs. These methods change the output layer and the label encoding. Another family keeps a standard softmax output and changes only the training target or loss: the squared Earth Mover's Distance loss of Hou et al.~\cite{hou2017} penalizes predicted probability mass according to a class-distance matrix, and soft ordinal labels~\cite{diaz2019} replace one-hot targets with distributions that decay with distance from the true class. Most of this work was evaluated on image tasks such as age estimation.
+
+For text, Castagnos et al.~\cite{castagnos2022} proposed Ordinal Log Loss (OLL), which adds a penalty $|k-y|^{\alpha}\log(1-\hat{p}_k)$ to probability mass placed on class $k$ far from the true class $y$, and showed it improves ordinal metrics for text classification. Kasa et al.~\cite{kasa2024} compared explicit (loss-based) and implicit (pretrained-model-based) ordinal approaches and proposed Multitask Log Loss (MLL), a convex combination $\lambda\,\mathrm{CE} + (1-\lambda)\,\mathrm{OLL}$, which they report balances nominal and ordinal performance. OLL and MLL need no change to the architecture, which makes them a good fit for a controlled comparison across architectures, and that is why we use them.
+
+\subsection{Evaluation for Ordered Labels}
+Accuracy and F1 treat all mistakes alike. Gaudette and Japkowicz~\cite{gaudette2009} argued for evaluation measures that reflect the distance between predicted and true classes, and Baccianella et al.~\cite{baccianella2009} showed that standard ordinal measures can be misleading on imbalanced data and proposed class-balanced versions. Chen et al.~\cite{chen2021} make a related point for NLP: accuracy and F1 do not fully describe quality for ordered targets, since a model can predict fewer ratings correctly yet make smaller errors. This is why we chose the metrics below. We report accuracy and Macro F1 for exact classification, mean absolute error (MAE) for the average distance, and the share of predictions that are off by two or more stars. Our data is strongly imbalanced (about 64\% five-star reviews), so Macro F1 and the distance-based metrics are needed alongside accuracy.
+
+\subsection{Domain Generalization}
+Blitzer et al.~\cite{blitzer2007} showed that a sentiment classifier trained on one Amazon product category can lose accuracy on another, because the words that signal sentiment differ between domains. That work used binary polarity rather than five-star ratings, but it motivates the optional evaluation of our models on a second product category, which we leave as future work.
+
+\subsection{Positioning of This Work}
+Table~\ref{tab:related} summarizes how the ordinal approaches discussed above differ and where this project sits. Prior ordinal-loss results for text were obtained mainly with a single model family (BERT-style encoders). We do not propose a new loss. Instead we run a controlled comparison of existing losses (cross entropy, OLL, MLL) on two different architectures, with the same data splits, the same model structure within each architecture, and the same evaluation protocol, on a large review dataset split by product.
+
+\begin{table}[t]
+\caption{Ordinal approaches from the literature and the ones used in this project.}
+\label{tab:related}
+\centering
+\small
+\begin{tabular}{p{1.9cm}p{2.5cm}p{1.4cm}c}
+\toprule
+Approach & Idea & Changes & Used \\
+ & & architecture? & here \\
+\midrule
+Frank \& Hall~\cite{frank2001}, CORAL~\cite{cao2020} & Binary decomposition (``rating $>j$?'') & Yes (output layer) & No \\
+EMD~\cite{hou2017}, SORD~\cite{diaz2019} & Distance-aware loss or soft labels on softmax output & No & No \\
+OLL~\cite{castagnos2022} & Penalize probability mass far from true class & No & Yes \\
+MLL~\cite{kasa2024} & $\lambda\,$CE $+ (1-\lambda)\,$OLL & No & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
